@@ -96,8 +96,6 @@ router.post('/', validateReading, async (req, res) => {
       dueDate,
     });
 
-    console.log(bill)
-
     await bill.save();
 
     res.status(201).json({

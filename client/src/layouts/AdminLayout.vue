@@ -9,7 +9,7 @@
         <div class="logo-section">
           <img :src="require('@/assets/blogo.png')" alt="Logo" height="80" />
           <div>
-            <div class="logo-text">SITIO BASAC WATER DISTRICT</div>
+            <div class="logo-text">SITIO BASAK WATER DISTRICT</div>
             <div class="logo-subtext">Malandag Malungon Sarangani Province</div>
           </div>
         </div>

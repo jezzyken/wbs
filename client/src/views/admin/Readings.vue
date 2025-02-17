@@ -598,7 +598,7 @@ export default {
     },
 
     async editReading(consumer) {
-      this.isEditing = true; // Make sure this is set
+      this.isEditing = true; 
       this.selectedConsumer = consumer;
 
       const currentMonth = new Date(this.selectedBillingPeriod).getMonth();
@@ -614,7 +614,7 @@ export default {
       });
 
       if (reading) {
-        console.log("Found reading:", reading); // Add debug log
+        console.log("Found reading:", reading); 
         this.originalReading = { ...reading };
         this.newReading = {
           _id: reading._id,

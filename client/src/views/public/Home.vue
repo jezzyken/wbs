@@ -3,7 +3,7 @@
     <!-- Hero Section -->
     <section class="hero-section">
       <div class="hero-content">
-        <h1>Sitio Basac Water District Bill Inquiry</h1>
+        <h1>Sitio Basak Water District Bill Inquiry</h1>
         <p>
           Check and manage your water bill online
         </p>

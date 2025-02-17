@@ -9,7 +9,7 @@
         <div class="logo-section">
           <img :src="require('@/assets/blogo.png')" alt="Logo" height="80" />
           <div>
-            <div class="logo-text">SITIO BASAC WATER DISTRICT</div>
+            <div class="logo-text">SITIO BASAK WATER DISTRICT</div>
             <div class="logo-subtext">Malandag Malungon Sarangani Province</div>
           </div>
         </div>
@@ -40,10 +40,10 @@
         <div class="footer-grid">
           <div class="footer-section">
             <h3>Contact Us</h3>
-            <p>Sitio Basac, Malandag</p>
+            <p>Sitio Basak, Malandag</p>
             <p>Malungon, Sarangani Province</p>
             <p>Phone: (123) 456-7890</p>
-            <p>Email: info@sitiobasacwd.gov.ph</p>
+            <p>Email: info@sitiobasakwd.gov.ph</p>
           </div>
           <div class="footer-section">
             <h3>Quick Links</h3>
@@ -65,7 +65,7 @@
         </div>
         <div class="footer-bottom">
           <p>
-            &copy; {{ currentYear }} Sitio Basac Water District. All rights
+            &copy; {{ currentYear }} Sitio Basak Water District. All rights
             reserved.
           </p>
         </div>

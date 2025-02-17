@@ -3,7 +3,7 @@
     <div class="login-container">
       <div class="login-header">
         <img :src="require('@/assets/blogo.png')" alt="Logo" height="80" />
-        <h1>SITIO BASAC WATER DISTRICT</h1>
+        <h1>SITIO BASAK WATER DISTRICT</h1>
         <p>Administrative Portal Login</p>
       </div>
 

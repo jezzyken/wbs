@@ -68,10 +68,10 @@
       <v-card-title class="d-flex justify-space-between py-4">
         <span class="text-h6">Consumer List</span>
         <div>
-          <v-btn text class="mr-2" @click="exportData">
+          <!-- <v-btn text class="mr-2" @click="exportData">
             <v-icon left>mdi-download</v-icon>
             Export
-          </v-btn>
+          </v-btn> -->
           <v-btn color="primary" @click="openAddDialog">
             <v-icon left>mdi-plus</v-icon>
             Add Consumer
