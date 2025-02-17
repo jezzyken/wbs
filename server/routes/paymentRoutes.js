@@ -38,7 +38,7 @@ router.post("/", async (req, res) => {
 
   try {
     const {
-      consumerId,
+      consumerData,
       amount,
       amountReceived,
       change,
@@ -47,24 +47,31 @@ router.post("/", async (req, res) => {
       status,
       notes,
       paymentMethod,
+      consumerId,
     } = req.body;
 
-    const paymentData = {
-      consumerId,
-      amount,
-      amountReceived,
-      change,
-      paymentType,
-      selectedFees,
-      status,
-      notes,
-      paymentMethod,
-    };
+    let paymentConsumerId = consumerId;
+    let paymentResult;
 
-    const payment = new Payment(paymentData);
-    await payment.save({ session });
+    if (paymentType === "MEMBERSHIP_FEE") {
+      const newConsumer = new Consumer({
+        accountNo: consumerData.accountNo,
+        firstName: consumerData.firstName,
+        lastName: consumerData.lastName,
+        middleName: consumerData.middleName || undefined,
+        nameExtension: consumerData.nameExtension || undefined,
+        fullAddress: consumerData.fullAddress || undefined,
+        purok: consumerData.purok || undefined,
+        contactNumber: consumerData.contactNumber || undefined,
+        email: consumerData.email || undefined,
+        status: "active",
+        isArchived: false,
+      });
 
-    if (paymentType === "BILL_PAYMENT") {
+      const savedConsumer = await newConsumer.save({ session });
+      paymentConsumerId = savedConsumer._id;
+      paymentResult = { consumer: savedConsumer };
+    } else if (paymentType === "BILL_PAYMENT") {
       const billUpdates = [];
 
       for (const fee of selectedFees) {
@@ -96,24 +103,70 @@ router.post("/", async (req, res) => {
           { session }
         );
       }
+
+      if (selectedFees.some((fee) => fee.name === "Reconnection Fee")) {
+        await Consumer.findByIdAndUpdate(
+          consumerId,
+          {
+            $set: {
+              status: "active",
+              lastPaymentDate: new Date(),
+            },
+          },
+          { session }
+        );
+      }
     }
 
+    const paymentData = {
+      consumerId: paymentConsumerId,
+      amount,
+      amountReceived,
+      change,
+      paymentType,
+      selectedFees,
+      status,
+      notes,
+      paymentMethod,
+    };
+
+    const payment = new Payment(paymentData);
+    await payment.save({ session });
+
     const paymentHistoryData = {
-      consumerId: payment.consumerId,
+      consumerId: paymentConsumerId,
       paymentId: payment._id,
       actionType: "payment_received",
       amount: payment.amount,
-      description: `Payment received via ${paymentMethod} for ${selectedFees
-        .map((fee) => fee.name)
-        .join(", ")}`,
+      description:
+        paymentType === "MEMBERSHIP_FEE"
+          ? `Initial membership payment received via ${paymentMethod}`
+          : `Payment received via ${paymentMethod} for ${selectedFees
+              .map((fee) => fee.name)
+              .join(", ")}`,
     };
 
     await PaymentHistory.create([paymentHistoryData], { session });
 
     await session.commitTransaction();
-    res.status(201).json({ payment });
+
+    paymentResult = {
+      ...paymentResult,
+      payment,
+      paymentHistory: paymentHistoryData,
+    };
+
+    res.status(201).json(paymentResult);
   } catch (error) {
     await session.abortTransaction();
+
+    if (error.code === 11000) {
+      return res.status(400).json({
+        error:
+          "Account number already exists. Please use a different account number.",
+      });
+    }
+
     console.error("Payment processing error:", error);
     res.status(400).json({ error: error.message });
   } finally {

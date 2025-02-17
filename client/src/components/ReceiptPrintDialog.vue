@@ -7,7 +7,6 @@
       
       <v-card-text class="pa-4">
         <div class="receipt-preview">
-          <!-- Header -->
           <div class="text-center mb-4">
             <div class="text-h6 font-weight-bold">BASAK WATER DISTRICT</div>
             <div class="text-subtitle-1">Official Receipt</div>
@@ -16,14 +15,12 @@
             </div>
           </div>
 
-          <!-- Consumer Info -->
           <v-card outlined class="mb-4 pa-3">
             <div><strong>Account No:</strong> {{ payment.consumer.accountNo }}</div>
             <div><strong>Consumer:</strong> {{ payment.consumer.name }}</div>
             <div><strong>Status:</strong> {{ payment.consumer.status }}</div>
           </v-card>
 
-          <!-- Transaction Items -->
           <div class="text-subtitle-1 font-weight-medium mb-2">Payment Details</div>
           <v-card outlined class="mb-4">
             <v-list dense>
@@ -41,7 +38,6 @@
             </v-list>
           </v-card>
 
-          <!-- Payment Summary -->
           <v-card outlined class="mb-4">
             <v-list dense>
               <v-list-item>
@@ -129,7 +125,6 @@ export default {
     },
     payment: {
       type: Object,
-      required: true
     }
   },
 
@@ -178,13 +173,12 @@ export default {
         this.snackbar = true;
         
         
-        // Short delay before closing and navigating
         setTimeout(() => {
           this.close();
           this.$router.push({ 
-            name: 'Billing',
+            name: 'ConsumerRecords',
             params: { 
-              refreshData: true // Optional: Use this to trigger data refresh in Billing page
+              refreshData: true 
             }
           });
         }, 1000);
@@ -201,6 +195,7 @@ export default {
     close() {
       if (this.loading) return;
       this.dialog = false;
+      this.$router.push({ name: 'ConsumerRecords' });
     }
   }
 };
