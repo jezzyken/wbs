@@ -70,7 +70,7 @@
             <v-icon x-small left>mdi-pencil</v-icon>
             Edit
           </v-btn>
-          <v-btn x-small text color="error" @click="deleteExpense(item)">
+          <v-btn v-if="userRole === 'admin'" x-small text color="error" @click="deleteExpense(item)">
             <v-icon x-small left>mdi-delete</v-icon>
             Delete
           </v-btn>
@@ -221,6 +221,10 @@ export default {
   computed: {
     ...mapState("expenses", ["expenses", "loading", "error"]),
 
+    userRole() {
+      return this.$store.state.auth.user?.role;
+    },
+
     filteredExpenses() {
       return this.expenses.filter((expense) => {
         const searchLower = this.search.toLowerCase();
@@ -341,3 +345,4 @@ export default {
   font-size: 14px !important;
 }
 </style>
+ 

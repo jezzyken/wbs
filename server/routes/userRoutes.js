@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require("../models/User");
 const { auth, adminAuth } = require("../middleware/auth");
 const crypto = require("crypto");
+const { ObjectId } = require('mongoose').Types;
 
 router.get("/me", auth, (req, res) => {
   const userResponse = req.user.toObject();
@@ -141,29 +142,19 @@ router.put("/:id", auth, async (req, res) => {
   }
 });
 
-router.delete("/:id", auth, adminAuth, async (req, res) => {
+router.delete("/:id", auth, async (req, res) => {
   try {
-    const user = await User.findOne({ userId: req.params.id });
+    const user = await User.findById(req.params.id);
+    console.log('Found user:', user);
+
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    if (user.role === "admin") {
-      const adminCount = await User.countDocuments({
-        role: "admin",
-        isArchived: false,
-        userId: { $ne: user.userId },
-      });
-      if (adminCount === 0) {
-        return res.status(400).json({
-          error: "Cannot archive the last admin user",
-        });
-      }
-    }
-
-    await user.archive(req.user.userId, req.body.reason);
+    await user.archive(req.user.id, req.body.reason);
     res.json({ message: "User archived successfully" });
   } catch (error) {
+    console.error('Error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -182,6 +173,7 @@ router.post("/change-password", auth, async (req, res) => {
 
     res.json({ message: "Password updated successfully" });
   } catch (error) {
+    console.log(error)
     res.status(400).json({ error: error.message });
   }
 });

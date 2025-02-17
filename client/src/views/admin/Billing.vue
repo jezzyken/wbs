@@ -57,7 +57,7 @@
         <v-row class="mt-4">
           <v-spacer></v-spacer>
           <v-btn text @click="resetFilters" class="mr-2">Reset</v-btn>
-          <v-btn color="primary" @click="applyFilters">Apply Filter</v-btn>
+          <!-- <v-btn color="primary" @click="applyFilters">Apply Filter</v-btn> -->
         </v-row>
       </v-card-text>
     </v-card>
@@ -125,41 +125,38 @@
       </v-data-table>
     </v-card>
 
-    <div ref="billContainer" style="display: none;">
-  <div
-    v-for="(billPair, pageIndex) in billPairs"
-    :key="pageIndex"
-    class="bill-container"
-    v-if="billPair && billPair.length > 0"
-  >
-    <div class="bill-wrapper">
-      <bill-template v-if="billPair[0]" :bill="billPair[0]" />
-    </div>
-    
-    <div v-if="billPair.length > 1">
-      <div class="dash-separator"></div>
-      <div class="bill-wrapper">
-        <bill-template :bill="billPair[1]" />
+    <div ref="billContainer" style="display: none">
+      <div
+        v-for="(billPair, pageIndex) in billPairs"
+        :key="pageIndex"
+        class="bill-container"
+        v-if="billPair && billPair.length > 0"
+      >
+        <div class="bill-wrapper">
+          <bill-template v-if="billPair[0]" :bill="billPair[0]" />
+        </div>
+
+        <div v-if="billPair.length > 1">
+          <div class="dash-separator"></div>
+          <div class="bill-wrapper">
+            <bill-template :bill="billPair[1]" />
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
-
   </v-container>
 </template>
 
 <script>
 import { mapState, mapActions } from "vuex";
 import moment from "moment-timezone";
-import BillTemplate from '@/components/BillTemplate.vue';
-import { BillGenerator } from '@/services/billGenerator';
-
-
+import BillTemplate from "@/components/BillTemplate.vue";
+import { BillGenerator } from "@/services/billGenerator";
 
 export default {
   name: "BillingPage",
   components: {
-    BillTemplate
+    BillTemplate,
   },
   data: () => ({
     navItems: [
@@ -179,12 +176,20 @@ export default {
     search: "",
 
     statusFilter: "All Status",
-    zoneFilter: "All Zones",
+    zoneFilter: "All",
     billingPeriod: "February 2025",
-    billingPeriods: ["February 2025", "January 2025", "December 2024"],
+    billingPeriods: [],
     statusItems: ["All Status", "Unpaid", "Paid", "Overdue"],
-    zones: ["All Zones", "Zone 1", "Zone 2", "Zone 3"],
-
+    zones: [
+      "All",
+      "Purok 1",
+      "Purok 2",
+      "Purok 3",
+      "Purok 4",
+      "Purok 5",
+      "Purok 6",
+      "Purok 7",
+    ],
     headers: [
       { text: "Bill Number", value: "billNo", sortable: true },
       { text: "Consumer Name", value: "consumerName", sortable: true },
@@ -202,18 +207,17 @@ export default {
     ...mapState("billings", ["bills", "loading", "error", "billTemplate"]),
 
     billPairs() {
-      
       const pairs = [];
       for (let i = 0; i < this.billingRecords.length; i += 2) {
-        const pair = this.billingRecords.slice(i, i + 2)
-          .map(record => {
-            const formattedData = BillGenerator.formatBillData(record);
-            return formattedData;
-          });
+        const pair = this.billingRecords.slice(i, i + 2).map((record) => {
+          const formattedData = BillGenerator.formatBillData(record);
+          return formattedData;
+        });
         pairs.push(pair);
       }
       return pairs;
     },
+
 
     billingRecords() {
       return this.bills.map((bill) => ({
@@ -243,6 +247,39 @@ export default {
       "updateBill",
       "fetchBillById",
     ]),
+
+    generateBillingPeriods() {
+      const periods = [];
+      const currentDate = new Date();
+      const currentYear = currentDate.getFullYear();
+      const currentMonth = currentDate.getMonth();
+      const months = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
+
+      months.forEach((month, index) => {
+        if (index >= currentMonth) {
+          periods.push(`${month} ${currentYear}`);
+        }
+      });
+
+      this.billingPeriods = periods;
+
+      if (!this.selectedBillingPeriod) {
+        this.selectedBillingPeriod = `${months[currentMonth]} ${currentYear}`;
+      }
+    },
 
     getStatusColor(status) {
       console.log(status);
@@ -302,29 +339,29 @@ export default {
     async generateBills() {
       try {
         const container = this.$refs.billContainer;
-        console.log('Container:', container); // Add this for debugging
-        console.log('Bill Pairs:', this.billPairs); // Add this for debugging
-        
+        console.log("Container:", container); // Add this for debugging
+        console.log("Bill Pairs:", this.billPairs); // Add this for debugging
+
         if (!container) {
-          console.error('Bill container not found');
+          console.error("Bill container not found");
           return;
         }
 
         // Make sure container is visible before generating PDF
-        container.style.display = 'block';
-        
+        container.style.display = "block";
+
         const success = await BillGenerator.generatePDF(container);
-        
+
         // Hide container after generation
-        container.style.display = 'none';
+        container.style.display = "none";
 
         if (success) {
-          console.log('PDF generated successfully');
+          console.log("PDF generated successfully");
         } else {
-          console.error('Failed to generate PDF');
+          console.error("Failed to generate PDF");
         }
       } catch (error) {
-        console.error('Error in generateBills:', error);
+        console.error("Error in generateBills:", error);
       }
     },
     exportData() {
@@ -333,6 +370,7 @@ export default {
   },
 
   async created() {
+    this.generateBillingPeriods()
     const date = moment
       .tz(this.billingPeriod, "MMMM YYYY", "Asia/Singapore")
       .startOf("month")
@@ -369,7 +407,7 @@ export default {
 
 .bill-container {
   width: 8.5in;
-  height: 11in; 
+  height: 11in;
   padding: 0;
   position: relative;
   background-color: white;
@@ -378,7 +416,7 @@ export default {
 }
 
 .bill-wrapper {
-  height: 5.5in; 
+  height: 5.5in;
   position: relative;
 }
 
@@ -387,12 +425,12 @@ export default {
   height: 0;
   border-top: 2px dashed #000;
   position: absolute;
-  top: 5.5in; 
+  top: 5.5in;
   left: 0;
 }
 
 @page {
-  size: letter portrait; 
+  size: letter portrait;
   margin: 0;
 }
 
@@ -401,5 +439,4 @@ export default {
     page-break-after: always;
   }
 }
-
 </style>

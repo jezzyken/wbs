@@ -58,7 +58,7 @@
         <v-row class="mt-4">
           <v-spacer></v-spacer>
           <v-btn text @click="resetFilters" class="mr-2">Reset</v-btn>
-          <v-btn color="primary" @click="applyFilters">Apply Filter</v-btn>
+          <!-- <v-btn color="primary" @click="applyFilters">Apply Filter</v-btn> -->
         </v-row>
       </v-card-text>
     </v-card>
@@ -121,7 +121,9 @@
             <v-icon x-small left>mdi-pencil</v-icon>
             Edit
           </v-btn>
+
           <v-btn
+            v-if="userRole === 'admin'"
             x-small
             text
             :color="item.isArchived ? 'success' : 'error'"
@@ -187,6 +189,7 @@
                   label="Middle Name"
                 ></v-text-field>
               </v-col>
+
               <v-col cols="12" sm="6">
                 <v-text-field
                   v-model="editedItem.lastName"
@@ -211,7 +214,7 @@
                 <v-select
                   v-model="editedItem.purok"
                   :items="puroks.filter((p) => p !== 'All')"
-                  label="Purok/Zone"
+                  label="Purok"
                   required
                 ></v-select>
               </v-col>
@@ -295,7 +298,7 @@ export default {
     ],
 
     statusItems: ["All", "active", "inactive", "disconnected", "delinquent"],
-    puroks: ["All", "Purok 1", "Purok 2", "Purok 3", "Purok 4", "Purok 5"],
+    puroks: ["All", "Purok 1", "Purok 2", "Purok 3", "Purok 4", "Purok 5", "Purok 6", "Purok 7"],
     archiveItems: ["Active", "Archived", "All"],
 
     editedItem: {
@@ -339,6 +342,10 @@ export default {
 
   computed: {
     ...mapState("consumers", ["consumers", "loading", "error"]),
+
+    userRole() {
+      return this.$store.state.auth.user?.role;
+    },
 
     getActionButtonText() {
       if (this.isEdit) {
@@ -522,5 +529,26 @@ export default {
 
 .v-data-table ::v-deep td {
   font-size: 14px !important;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  background-color: #f5f7fa;
+  font-weight: 600;
+  text-align: left;
+  padding: 12px 20px;
+  font-size: 14px;
+  color: #333;
+  border-bottom: 2px solid #dee2e6;
+}
+
+td {
+  padding: 12px 20px;
+  font-size: 14px;
+  border-bottom: 1px solid #dee2e6;
 }
 </style>

@@ -3,7 +3,7 @@
     <header class="gov-header">
       <span>{{ localDate }}</span> • <span>{{ localTime }}</span>
     </header>
-    
+
     <header class="main-header">
       <div class="header-content">
         <div class="logo-section">
@@ -20,7 +20,10 @@
       <div class="nav-content">
         <ul class="nav-links">
           <li v-for="item in menuItems" :key="item.text">
-            <router-link :to="item.link" :class="{ active: isActiveRoute(item.link) }">
+            <router-link
+              :to="item.link"
+              :class="{ active: isActiveRoute(item.link) }"
+            >
               {{ item.text }}
             </router-link>
           </li>
@@ -40,78 +43,129 @@
 
 <script>
 export default {
-  name: 'AdminLayout',
-  
+  name: "AdminLayout",
+
   data() {
     return {
-      menuItems: [
-        { text: 'Dashboard', link: '/admin/dashboard' },
-        { 
-    text: 'Consumer Records', 
-    link: '/admin/consumers',
-    children: [
-      { text: 'Add Consumer', link: '/admin/consumers/add' },
-      { text: 'View Consumers', link: '/admin/consumers/view' },
-      { text: 'Consumer Categories', link: '/admin/consumers/categories' }
-    ]
-  },
-        { text: 'Billing', link: '/admin/billing' },
-        // { text: 'Payments', link: '/admin/payments' },
-        { text: 'Readings', link: '/admin/readings' },
-        { text: 'Expenses', link: '/admin/expenses' },
-        { text: 'Users', link: '/admin/users' },
-        { text: 'Reports', link: '/admin/reports' },
-        // { text: 'Settings', link: '/admin/settings' }
-      ],
-      localDate: '',
-      localTime: '',
+      //     menuItems: [
+      //       { text: 'Dashboard', link: '/admin/dashboard' },
+      //       {
+      //   text: 'Consumer Records',
+      //   link: '/admin/consumers',
+      //   children: [
+      //     { text: 'Add Consumer', link: '/admin/consumers/add' },
+      //     { text: 'View Consumers', link: '/admin/consumers/view' },
+      //     { text: 'Consumer Categories', link: '/admin/consumers/categories' }
+      //   ]
+      // },
+      //       { text: 'Billing', link: '/admin/billing' },
+      //       // { text: 'Payments', link: '/admin/payments' },
+      //       { text: 'Readings', link: '/admin/readings' },
+      //       { text: 'Expenses', link: '/admin/expenses' },
+      //       { text: 'Users', link: '/admin/users' },
+      //       { text: 'Reports', link: '/admin/reports' },
+      //       // { text: 'Settings', link: '/admin/settings' }
+      //     ],
+      localDate: "",
+      localTime: "",
       timer: null,
-      userName: 'Administrator' 
-    }
+    };
   },
 
   created() {
-    this.updateDateTime()
-    this.timer = setInterval(this.updateDateTime, 1000)
+    this.updateDateTime();
+    this.timer = setInterval(this.updateDateTime, 1000);
   },
 
   beforeDestroy() {
     if (this.timer) {
-      clearInterval(this.timer)
+      clearInterval(this.timer);
     }
+  },
+
+  computed: {
+    menuItems() {
+      const allMenuItems = [
+        { text: "Dashboard", link: "/admin/dashboard", roles: ["admin", "collection_officer"], },
+        {
+          text: "Consumer Records",
+          link: "/admin/consumers",
+          roles: ["admin", "collection_officer"],
+          children: [
+            { text: "Add Consumer", link: "/admin/consumers/add" },
+            { text: "View Consumers", link: "/admin/consumers/view" },
+            {
+              text: "Consumer Categories",
+              link: "/admin/consumers/categories",
+            },
+          ],
+        },
+        {
+          text: "Billing",
+          link: "/admin/billing",
+          roles: ["admin", "collection_officer"],
+        },
+        {
+          text: "Readings",
+          link: "/admin/readings",
+          roles: ["admin"],
+        },
+        {
+          text: "Expenses",
+          link: "/admin/expenses",
+          roles: ["admin", "collection_officer"],
+        },
+        { text: "Users", link: "/admin/users", roles: ["admin"] },
+        { text: "Reports", link: "/admin/reports", roles: ["admin"] },
+      ];
+
+      // Filter menu items based on user role
+      return allMenuItems.filter((item) => {
+        if (!item.roles) return true; // Show to all if no roles specified
+        return item.roles.includes(this.userRole);
+      });
+    },
+
+    userRole() {
+      return this.$store.state.auth.user?.role;
+    },
+
+    userName() {
+      return this.$store.state.auth.user?.username || "Guest";
+    },
   },
 
   methods: {
     updateDateTime() {
-      const now = new Date()
-      this.localDate = now.toLocaleDateString('en-PH', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      })
-      this.localTime = now.toLocaleTimeString('en-PH', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true
-      })
+      const now = new Date();
+      this.localDate = now.toLocaleDateString("en-PH", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+      this.localTime = now.toLocaleTimeString("en-PH", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+      });
     },
 
     isActiveRoute(link) {
-      return this.$route.path === link
+      return this.$route.path === link;
     },
 
     async handleLogout() {
       try {
-        await this.$store.dispatch('auth/logout')
-        this.$router.push('/login')
+        await this.$store.dispatch("auth/logout");
+        this.$router.push("/login");
       } catch (error) {
-        console.error('Logout failed:', error)
+        console.error("Logout failed:", error);
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style scoped>

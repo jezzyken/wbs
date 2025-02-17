@@ -50,7 +50,7 @@
         }"
       >
         <template v-slot:item.role="{ item }">
-          <v-chip :color="getRoleColor(item.role)" small label>
+          <v-chip :color="getRoleColor(item.role)" small label dark>
             {{ formatRole(item.role) }}
           </v-chip>
         </template>
@@ -82,6 +82,7 @@
             text
             :color="item.isArchived ? 'success' : 'error'"
             @click="confirmArchive(item)"
+            v-if="item.email !== 'admin@app.dev'"
           >
             <v-icon x-small left>mdi-archive</v-icon>
             Archive
@@ -177,6 +178,7 @@
             :disabled="!valid || isSaving"
             :loading="isSaving"
             @click="saveUser"
+            v-if="editedItem.email !== 'admin@app.dev'"
           >
             Save
           </v-btn>
@@ -385,6 +387,8 @@ export default {
     openAddDialog() {
       this.isEdit = false;
       this.editedItem = { ...this.defaultItem };
+
+      console.log(this.editedItem);
       this.dialog = true;
     },
     editUser(item) {
@@ -399,7 +403,9 @@ export default {
       this.$nextTick(() => {
         if (this.$refs.form) {
           this.$refs.form.reset();
-          this.editedItem = { ...this.defaultItem };
+          if (!this.isEdit) {
+            this.editedItem = { ...this.defaultItem };
+          }
         }
       });
     },

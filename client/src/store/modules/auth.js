@@ -13,6 +13,11 @@ export default {
   mutations: {
     SET_USER(state, user) {
       state.user = user;
+      if (user) {
+        localStorage.setItem("user", JSON.stringify(user));
+      } else {
+        localStorage.removeItem("user");
+      }
     },
     SET_TOKEN(state, token) {
       state.token = token;
@@ -37,6 +42,7 @@ export default {
       commit("SET_LOADING", true);
       try {
         const { data } = await api.post("/auths/login", credentials);
+        console.log(data)
         commit("SET_USER", data.user);
         commit("SET_TOKEN", data.token);
         commit("SET_ERROR", null);

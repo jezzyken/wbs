@@ -1,7 +1,12 @@
 <template>
   <v-container class="px-2">
     <div class="mb-4">
-      <v-breadcrumbs :items="breadcrumbs" divider="/" class="pa-0">
+      <v-breadcrumbs
+        :items="breadcrumbs"
+        divider="/"
+        class="pa-0"
+        v-if="userRole !== 'meter_reader'"
+      >
         <template v-slot:item="{ item }">
           <v-breadcrumbs-item
             :href="item.href"
@@ -14,8 +19,7 @@
       </v-breadcrumbs>
 
       <div class="d-flex flex-wrap align-center justify-space-between mb-2">
-        <h1 class="text-h5 primary--text font-weight-bold">
-        </h1>
+        <h1 class="text-h5 primary--text font-weight-bold"></h1>
         <v-chip color="primary" small class="ml-2">
           <v-icon left x-small>mdi-clock-outline</v-icon>
           {{ getPendingReadingsCount }} Pending
@@ -267,7 +271,7 @@
             "
             color="grey"
           >
-            <v-icon>mdi-eye</v-icon>
+            <v-icon x-small>mdi-eye</v-icon>
           </v-btn>
 
           <v-btn
@@ -281,7 +285,7 @@
             "
             color="primary"
           >
-            <v-icon>mdi-pencil</v-icon>
+            <v-icon x-small>mdi-pencil</v-icon>
           </v-btn>
 
           <v-btn
@@ -335,7 +339,7 @@ export default {
         disabled: true,
       },
     ],
-    billingPeriods: ["January 2025", "February 2025", "March 2025"],
+    billingPeriods: [],
     selectedBillingPeriod: "February 2025",
     search: "",
     selectedConsumer: null,
@@ -360,6 +364,10 @@ export default {
   computed: {
     ...mapState("consumers", ["consumers"]),
     ...mapState("readings", ["readings", "loading"]),
+
+    userRole() {
+      return this.$store.state.auth.user?.role;
+    },
 
     isReadOnly() {
       if (!this.selectedConsumer) return true;
@@ -528,6 +536,39 @@ export default {
       "createReading",
       "updateReading",
     ]),
+
+    generateBillingPeriods() {
+      const periods = [];
+      const currentDate = new Date();
+      const currentYear = currentDate.getFullYear();
+      const currentMonth = currentDate.getMonth();
+      const months = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
+
+      months.forEach((month, index) => {
+        if (index >= currentMonth) {
+          periods.push(`${month} ${currentYear}`);
+        }
+      });
+
+      this.billingPeriods = periods;
+
+      if (!this.selectedBillingPeriod) {
+        this.selectedBillingPeriod = `${months[currentMonth]} ${currentYear}`;
+      }
+    },
 
     getReadingStatusColor(status) {
       return (
@@ -745,6 +786,7 @@ export default {
   },
 
   async created() {
+    this.generateBillingPeriods();
     try {
       await Promise.all([this.fetchConsumers(), this.fetchReadings()]);
     } catch (error) {

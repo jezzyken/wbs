@@ -24,10 +24,10 @@ export default {
       notification: {
         show: false,
         message: '',
-        type: 'info', // info, success, error, warning
+        type: 'info', 
         timeout: null
       },
-      isLoading: false
+      isLoading: false  
     };
   },
 
@@ -39,10 +39,8 @@ export default {
   },
 
   created() {
-    // Listen for global notifications
     this.$root.$on('show-notification', this.showNotification);
     
-    // Check authentication status on app load
     this.checkAuth();
   },
 
@@ -56,7 +54,6 @@ export default {
   methods: {
     async checkAuth() {
       try {
-        // Check if there's a stored token
         const token = localStorage.getItem('token');
         if (token) {
           await this.$store.dispatch('auth/validateToken', token);
@@ -143,7 +140,6 @@ body {
   background-color: #f8f9fa;
 }
 
-/* Form styles */
 .form-group {
   margin-bottom: 1rem;
 }
@@ -164,7 +160,6 @@ body {
   font-size: 14px;
 }
 
-/* Card styles */
 .card {
   background: white;
   border-radius: 8px;
@@ -184,27 +179,78 @@ body {
   padding: 20px;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
+.v-data-table {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-th {
+.v-data-table .v-data-table-header {
   background-color: #f5f7fa;
+}
+
+.v-data-table .v-data-table-header th {
   font-weight: 600;
   text-align: left;
   padding: 12px 20px;
   font-size: 14px;
   color: #333;
   border-bottom: 2px solid #dee2e6;
+  text-transform: none; 
 }
 
-td {
-  padding: 12px 20px;
-  font-size: 14px;
+.v-data-table .v-data-table__wrapper tbody tr {
   border-bottom: 1px solid #dee2e6;
 }
 
+.v-data-table .v-data-table__wrapper tbody td {
+  padding: 12px 20px;
+  font-size: 14px;
+}
+
+.v-data-table .v-data-table__wrapper tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.v-data-table .v-data-table__wrapper tbody tr.v-data-table__selected {
+  background-color: rgba(0, 56, 117, 0.05);
+}
+
+.v-data-table .v-data-footer {
+  border-top: 1px solid #dee2e6;
+  padding: 8px 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .v-data-table .v-data-table-header th,
+  .v-data-table .v-data-table__wrapper tbody td {
+    padding: 12px 15px;
+  }
+}
+
+/* Loading state */
+.v-data-table.v-data-table--loading {
+  position: relative;
+}
+
+.v-data-table.v-data-table--loading:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  z-index: 1;
+}
+
+/* Sort icons */
+.v-data-table .v-data-table-header th.sortable .v-data-table__sort-icon {
+  color: #003875;
+  margin-left: 4px;
+}
 .badge {
   padding: 4px 8px;
   border-radius: 4px;
@@ -227,7 +273,6 @@ td {
   color: #dc3545;
 }
 
-/* Loading indicator */
 .global-loader {
   position: fixed;
   top: 0;
@@ -250,7 +295,6 @@ td {
   animation: spin 1s linear infinite;
 }
 
-/* Notification component */
 .notification {
   position: fixed;
   top: 20px;
@@ -295,7 +339,6 @@ td {
   opacity: 1;
 }
 
-/* Animations */
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -312,7 +355,6 @@ td {
   }
 }
 
-/* Responsive utilities */
 @media (max-width: 768px) {
   .container {
     padding: 0 15px;
@@ -329,7 +371,6 @@ td {
   }
 }
 
-/* Print styles */
 @media print {
   .no-print {
     display: none !important;

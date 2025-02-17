@@ -90,14 +90,17 @@ export default {
     async handleLogin() {
   try {
     // Wait for login and token storage to complete
-    await this.$store.dispatch('auth/login', {
+    const user = await this.$store.dispatch('auth/login', {
       ...this.credentials,
       rememberMe: this.rememberMe
     })
     
-    // Get the redirect path from query params or use default
-    const redirectPath = this.$route.query.redirect || '/admin/dashboard'
-    this.$router.push(redirectPath)
+    if (user.role === 'meter_reader') {
+      this.$router.push('/admin/readings')
+    } else {
+      const redirectPath = this.$route.query.redirect || '/admin/dashboard'
+      this.$router.push(redirectPath)
+    }
   } catch (error) {
     this.error = error.message || 'Login failed'
   }
