@@ -3,7 +3,7 @@ import axios from 'axios'
 console.log(process.env.VUE_APP_API_URL)
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000/api',
+  baseURL: 'https://basak.onrender.com/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
