@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-let prod = false
+let prod = true
 
 const baseURL = prod 
   ? 'https://basak.onrender.com/api'
