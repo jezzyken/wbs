@@ -164,7 +164,9 @@
                   v-model="editedItem.accountNo"
                   label="Account No."
                   :disabled="isEdit"
+                  v-mask="letterMask"
                   required
+                   :rules="accountNoRules"
                 ></v-text-field>
               </v-col>
               <v-col cols="12" sm="6">
@@ -180,7 +182,8 @@
                   v-model="editedItem.firstName"
                   label="First Name"
                   required
-                  :rules="nameRules"
+                  :rules="accountNoRules"
+                    v-mask="letterMask"
                 ></v-text-field>
               </v-col>
               <v-col cols="12" sm="6">
@@ -195,7 +198,8 @@
                   v-model="editedItem.lastName"
                   label="Last Name"
                   required
-                  :rules="nameRules"
+                  :rules="accountNoRules"
+                    v-mask="letterMask"
                 ></v-text-field>
               </v-col>
               <v-col cols="12" sm="6">
@@ -222,7 +226,8 @@
                 <v-text-field
                   v-model="editedItem.contactNumber"
                   label="Contact Number"
-                  :rules="phoneRules"
+                  :rules="contactNumberRules"
+                    v-mask="numberMask"
                 ></v-text-field>
               </v-col>
               <v-col cols="12">
@@ -298,7 +303,16 @@ export default {
     ],
 
     statusItems: ["All", "active", "inactive", "disconnected", "delinquent"],
-    puroks: ["All", "Purok 1", "Purok 2", "Purok 3", "Purok 4", "Purok 5", "Purok 6", "Purok 7"],
+    puroks: [
+      "All",
+      "Purok 1",
+      "Purok 2",
+      "Purok 3",
+      "Purok 4",
+      "Purok 5",
+      "Purok 6",
+      "Purok 7",
+    ],
     archiveItems: ["Active", "Archived", "All"],
 
     editedItem: {
@@ -328,13 +342,21 @@ export default {
       consumerType: "Existing Consumer",
     },
 
+    letterMask: Array(30).fill(/[A-Za-z]/), 
+    numberMask: Array(11).fill(/[0-9]/),   
+
+    accountNoRules: [
+      (v) => !!v || "Account number is required",
+      (v) =>
+        /^[A-Za-z]+$/.test(v) || "Account number must contain letters only",
+    ],
     nameRules: [
       (v) => (v || "").length > 0 || "Name is required",
       (v) => (v || "").length >= 2 || "Name must be at least 2 characters",
     ],
-    phoneRules: [
-      (v) => !v || /^\+?[\d\s-]{10,}$/.test(v) || "Invalid phone number format",
-    ],
+    contactNumberRules: [
+    v => !v || /^\d+$/.test(v) || 'Contact number must contain numbers only'
+  ],
     emailRules: [(v) => !v || /.+@.+\..+/.test(v) || "Invalid email format"],
     isSaving: false,
     consumerTypes: ["New Consumer", "Existing Consumer"],

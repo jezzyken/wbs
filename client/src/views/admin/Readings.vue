@@ -83,7 +83,7 @@
           @keyup.enter="searchConsumer"
           prepend-inner-icon="mdi-magnify"
         >
-          <template v-slot:append>
+          <!-- <template v-slot:append>
             <v-btn
               color="primary"
               @click="searchConsumer"
@@ -93,7 +93,7 @@
             >
               Search
             </v-btn>
-          </template>
+          </template> -->
         </v-text-field>
       </v-card-text>
     </v-card>
@@ -187,7 +187,7 @@
         <v-divider></v-divider>
 
         <v-card-actions class="pa-3">
-          <v-btn text @click="clearSelectedConsumer">
+          <v-btn text @click="clearSelectedConsumer" v-if="!isReadOnly">
             <v-icon left>mdi-arrow-left</v-icon>
             Back
           </v-btn>
@@ -229,7 +229,7 @@
 
     <v-card v-else outlined>
       <v-list-item
-        v-for="consumer in getPendingReadings"
+        v-for="consumer in filteredReadings"
         :key="consumer._id"
         class="reading-list-item"
       >
@@ -317,6 +317,7 @@
 </template>
 
 <script>
+import consumers from "@/store/modules/consumers";
 import { mapState, mapActions } from "vuex";
 
 export default {
@@ -364,6 +365,19 @@ export default {
   computed: {
     ...mapState("consumers", ["consumers"]),
     ...mapState("readings", ["readings", "loading"]),
+
+    filteredReadings() {
+      if (!this.search) return this.getPendingReadings;
+
+      const searchTerm = this.search.toLowerCase();
+      return this.getPendingReadings.filter(
+        (c) =>
+          c.accountNo.toLowerCase().includes(searchTerm) ||
+          c.firstName.toLowerCase().includes(searchTerm) ||
+          c.lastName.toLowerCase().includes(searchTerm) ||
+          c.fullAddress.toLowerCase().includes(searchTerm)
+      );
+    },
 
     userRole() {
       return this.$store.state.auth.user?.role;
@@ -579,12 +593,29 @@ export default {
       );
     },
 
-    async searchConsumer() {
-      const found = this.consumers.find((c) => c.accountNo === this.search);
-      if (found) {
-        this.selectConsumer(found);
+    searchConsumer() {
+      if (!this.search) {
+        this.selectedConsumer = null;
+        return;
+      }
+
+      const searchTerm = this.search.toLowerCase();
+      const matchingConsumers = this.consumers.filter(
+        (c) =>
+          c.accountNo.toLowerCase().includes(searchTerm) ||
+          c.firstName.toLowerCase().includes(searchTerm) ||
+          c.lastName.toLowerCase().includes(searchTerm) ||
+          c.fullAddress.toLowerCase().includes(searchTerm)
+      );
+
+      if (matchingConsumers.length === 1) {
+        this.selectConsumer(matchingConsumers[0]);
+      } else if (matchingConsumers.length > 1) {
+        this.getPendingReadings = matchingConsumers;
+        this.selectedConsumer = null;
       } else {
-        this.showSnackbar("Consumer not found", "error");
+        this.showSnackbar("No matching consumers found", "error");
+        this.selectedConsumer = null;
       }
     },
 
@@ -598,7 +629,7 @@ export default {
     },
 
     async editReading(consumer) {
-      this.isEditing = true; 
+      this.isEditing = true;
       this.selectedConsumer = consumer;
 
       const currentMonth = new Date(this.selectedBillingPeriod).getMonth();
@@ -614,7 +645,7 @@ export default {
       });
 
       if (reading) {
-        console.log("Found reading:", reading); 
+        console.log("Found reading:", reading);
         this.originalReading = { ...reading };
         this.newReading = {
           _id: reading._id,

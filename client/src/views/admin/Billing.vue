@@ -81,7 +81,7 @@
 
       <v-data-table
         :headers="headers"
-        :items="billingRecords"
+        :items="filteredBillingRecords"
         :loading="loading"
         :items-per-page="10"
         :footer-props="{
@@ -218,8 +218,30 @@ export default {
       return pairs;
     },
 
+    filteredBillingRecords() {
+      return this.billingRecords.filter((bill) => {
+        const matchesSearch =
+          this.search.toLowerCase() === "" ||
+          bill.consumerName.toLowerCase().includes(this.search.toLowerCase()) ||
+          bill.consumerId.toLowerCase().includes(this.search.toLowerCase());
+
+        const matchesStatus =
+          this.statusFilter === "All Status" ||
+          bill.status.toLowerCase() === this.statusFilter.toLowerCase();
+
+        const matchesZone =
+          this.zoneFilter === "All" || bill.zone === this.zoneFilter;
+
+        const matchesTab =
+          this.tabs[this.activeTab] === "All Bills" ||
+          bill.status.toLowerCase() === this.tabs[this.activeTab].toLowerCase();
+
+        return matchesSearch && matchesStatus && matchesZone && matchesTab;
+      });
+    },
 
     billingRecords() {
+      console.log({ bills: this.bills });
       return this.bills.map((bill) => ({
         billNo: bill.billNo,
         consumerName: `${bill.consumer.firstName} ${bill.consumer.lastName}`,
@@ -227,7 +249,7 @@ export default {
         prevReading: bill.meterReading.previousReading,
         currReading: bill.meterReading.currentReading,
         consumption: `${bill.meterReading.consumption} m³`,
-        amount: `₱${bill.totalAmountDue.toFixed(2)}`,
+        amount: `₱${bill.amount.toFixed(2)}`,
         billing: bill.billingPeriod,
         dueDate: new Date(bill.dueDate).toLocaleDateString("en-US", {
           month: "short",
@@ -370,7 +392,7 @@ export default {
   },
 
   async created() {
-    this.generateBillingPeriods()
+    this.generateBillingPeriods();
     const date = moment
       .tz(this.billingPeriod, "MMMM YYYY", "Asia/Singapore")
       .startOf("month")

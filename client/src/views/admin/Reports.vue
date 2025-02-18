@@ -162,7 +162,7 @@
             </template>
             <template v-slot:item.consumerId="{ item }">
               <div>{{ formatConsumerName(item.consumerId) }}</div>
-              <div class="text-caption">{{ item.consumerId.accountNo }}</div>
+              <div class="text-caption">{{ item?.consumerId?.accountNo }}</div>
             </template>
             <template v-slot:item.amount="{ item }">
               ₱{{ formatNumber(item.amount) }}
