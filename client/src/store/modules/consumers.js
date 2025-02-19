@@ -30,6 +30,7 @@ export default {
       commit("SET_LOADING", true);
       try {
         const { data } = await api.get("/consumers");
+        console.log(data)
         console.log(data);
         commit("SET_CONSUMERS", data);
         commit("SET_ERROR", null);

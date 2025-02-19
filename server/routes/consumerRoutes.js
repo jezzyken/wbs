@@ -4,9 +4,15 @@ const Consumer = require("../models/Consumer");
 
 router.get("/", async (req, res) => {
   try {
-    const consumers = await Consumer.find().sort({ createdAt: -1 });
+    const results = await Consumer.find().sort({ createdAt: -1 }).lean();
+
+    const consumers = results.map(item => ({
+      ...item, fullName: `${item.firstName} ${item.lastName}`
+    }))
+    console.log(consumers)
     res.json(consumers);
   } catch (error) {
+    console.log(error)
     res.status(500).json({ error: error.message });
   }
 });

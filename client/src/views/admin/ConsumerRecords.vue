@@ -327,7 +327,6 @@ export default {
         text: "Name",
         value: "fullName",
         sortable: true,
-        sort: (a, b) => a.fullName.localeCompare(b.fullName),
       },
       { text: "Address", value: "fullAddress", sortable: true },
       { text: "Purok/Zone", value: "purok", sortable: true },

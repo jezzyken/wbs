@@ -36,10 +36,10 @@ const consumerSchema = new Schema({
     enum: ['active', 'inactive', 'delinquent', 'disconnected'],
     default: 'active'
   },
-  isArchived: {
-    type: Boolean,
-    default: false
-  },
+  // isArchived: {
+  //   type: Boolean,
+  //   default: false
+  // },
   // ...archiveFields
 }, );
 
