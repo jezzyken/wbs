@@ -70,7 +70,13 @@
             <v-icon x-small left>mdi-pencil</v-icon>
             Edit
           </v-btn>
-          <v-btn v-if="userRole === 'admin'" x-small text color="error" @click="deleteExpense(item)">
+          <v-btn
+            v-if="userRole === 'admin'"
+            x-small
+            text
+            color="error"
+            @click="onDeleteExpenses(item)"
+          >
             <v-icon x-small left>mdi-delete</v-icon>
             Delete
           </v-btn>
@@ -312,13 +318,14 @@ export default {
       }
     },
 
-    deleteExpense(item) {
+    onDeleteExpenses(item) {
       this.itemToDelete = item;
       this.confirmDialog = true;
     },
 
     async confirmDelete() {
       try {
+        console.log("Deleting expense with ID:", this.itemToDelete._id);
         await this.deleteExpense(this.itemToDelete._id);
         this.snackbarText = "Expense deleted successfully";
         this.snackbarColor = "success";
@@ -345,4 +352,3 @@ export default {
   font-size: 14px !important;
 }
 </style>
- 

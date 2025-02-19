@@ -1,12 +1,12 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const Bill = require('../models/Bill');
-const Consumer = require('../models/Consumer');
-const MeterReading = require('../models/MeterReading');
-const Expense = require('../models/Expense');
+const Bill = require("../models/Bill");
+const Consumer = require("../models/Consumer");
+const MeterReading = require("../models/MeterReading");
+const Expense = require("../models/Expense");
 
 // Get dashboard summary
-router.get('/summary', async (req, res) => {
+router.get("/summary", async (req, res) => {
   try {
     // Get counts and summaries
     const [
@@ -15,26 +15,35 @@ router.get('/summary', async (req, res) => {
       totalUnpaidBills,
       totalOverdueBills,
       currentMonthReadings,
-      monthlyExpenses
+      monthlyExpenses,
     ] = await Promise.all([
       Consumer.countDocuments(),
-      Consumer.countDocuments({ status: 'active' }),
-      Bill.countDocuments({ status: 'unpaid' }),
-      Bill.countDocuments({ status: 'overdue' }),
+      Consumer.countDocuments({ status: "active" }),
+      Bill.countDocuments({ status: "unpaid" }),
+      Bill.countDocuments({ status: "overdue" }),
       MeterReading.countDocuments({
         readingDate: {
           $gte: new Date(new Date().setDate(1)),
-          $lte: new Date()
-        }
+          $lte: new Date(),
+        },
       }),
       Expense.aggregate([
         {
+          $match: {
+            isArchived: { $ne: true },
+            date: {
+              $gte: new Date(new Date().setDate(1)),
+              $lte: new Date(),
+            },
+          },
+        },
+        {
           $group: {
             _id: null,
-            total: { $sum: '$amount' }
-          }
-        }
-      ])
+            total: { $sum: "$amount" },
+          },
+        },
+      ]),
     ]);
 
     res.json({
@@ -43,7 +52,7 @@ router.get('/summary', async (req, res) => {
       totalUnpaidBills,
       totalOverdueBills,
       currentMonthReadings,
-      monthlyExpenses: monthlyExpenses[0]?.total || 0
+      monthlyExpenses: monthlyExpenses[0]?.total || 0,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -51,27 +60,27 @@ router.get('/summary', async (req, res) => {
 });
 
 // Get monthly collections summary
-router.get('/collections', async (req, res) => {
+router.get("/collections", async (req, res) => {
   try {
     const collections = await Bill.aggregate([
       {
         $match: {
-          status: 'paid',
-          paidAmount: { $gt: 0 }
-        }
+          status: "paid",
+          paidAmount: { $gt: 0 },
+        },
       },
       {
         $group: {
           _id: {
-            year: { $year: '$updatedAt' },
-            month: { $month: '$updatedAt' }
+            year: { $year: "$updatedAt" },
+            month: { $month: "$updatedAt" },
           },
-          total: { $sum: '$paidAmount' },
-          count: { $sum: 1 }
-        }
+          total: { $sum: "$paidAmount" },
+          count: { $sum: 1 },
+        },
       },
-      { $sort: { '_id.year': -1, '_id.month': -1 } },
-      { $limit: 12 }
+      { $sort: { "_id.year": -1, "_id.month": -1 } },
+      { $limit: 12 },
     ]);
 
     res.json(collections);
@@ -81,15 +90,15 @@ router.get('/collections', async (req, res) => {
 });
 
 // Get consumer status distribution
-router.get('/consumer-status', async (req, res) => {
+router.get("/consumer-status", async (req, res) => {
   try {
     const statusDistribution = await Consumer.aggregate([
       {
         $group: {
-          _id: '$status',
-          count: { $sum: 1 }
-        }
-      }
+          _id: "$status",
+          count: { $sum: 1 },
+        },
+      },
     ]);
 
     res.json(statusDistribution);
@@ -99,17 +108,17 @@ router.get('/consumer-status', async (req, res) => {
 });
 
 // Get expense summary by type
-router.get('/expenses', async (req, res) => {
+router.get("/expenses", async (req, res) => {
   try {
     const expenseSummary = await Expense.aggregate([
       {
         $group: {
-          _id: '$expenseType',
-          total: { $sum: '$amount' },
-          count: { $sum: 1 }
-        }
+          _id: "$expenseType",
+          total: { $sum: "$amount" },
+          count: { $sum: 1 },
+        },
       },
-      { $sort: { total: -1 } }
+      { $sort: { total: -1 } },
     ]);
 
     res.json(expenseSummary);
@@ -119,22 +128,56 @@ router.get('/expenses', async (req, res) => {
 });
 
 // Get recent activities
-router.get('/recent-activities', async (req, res) => {
+router.get("/recent-activities", async (req, res) => {
   try {
     const [recentBills, recentReadings] = await Promise.all([
-      Bill.find()
-        .sort({ createdAt: -1 })
-        .limit(5)
-        .populate('consumerId', 'firstName lastName'),
-      MeterReading.find()
-        .sort({ readingDate: -1 })
-        .limit(5)
-        .populate('consumerId', 'firstName lastName')
+      Bill.aggregate([
+        {
+          $lookup: {
+            from: "consumers",
+            localField: "consumerId",
+            foreignField: "_id",
+            as: "consumer",
+          },
+        },
+        {
+          $match: {
+            consumer: { $ne: [] },
+          },
+        },
+        {
+          $sort: { createdAt: -1 },
+        },
+        {
+          $limit: 5,
+        },
+      ]),
+      MeterReading.aggregate([
+        {
+          $lookup: {
+            from: "consumers",
+            localField: "consumerId",
+            foreignField: "_id",
+            as: "consumer",
+          },
+        },
+        {
+          $match: {
+            consumer: { $ne: [] },
+          },
+        },
+        {
+          $sort: { readingDate: -1 },
+        },
+        {
+          $limit: 5,
+        },
+      ]),
     ]);
 
     res.json({
       recentBills,
-      recentReadings
+      recentReadings,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

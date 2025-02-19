@@ -1,6 +1,6 @@
 <template>
   <v-container class="px-6">
-    <!-- Page Header -->
+    <!-- Header -->
     <div class="mb-6">
       <v-breadcrumbs
         :items="breadcrumbs"
@@ -44,99 +44,119 @@
               hide-details
             ></v-select>
           </v-col>
-          <v-col cols="12" sm="6" md="3">
-            <v-select
-              v-model="archiveFilter"
-              :items="archiveItems"
-              label="Archive Status"
-              dense
-              outlined
-              hide-details
-            ></v-select>
-          </v-col>
         </v-row>
         <v-row class="mt-4">
           <v-spacer></v-spacer>
           <v-btn text @click="resetFilters" class="mr-2">Reset</v-btn>
-          <!-- <v-btn color="primary" @click="applyFilters">Apply Filter</v-btn> -->
         </v-row>
       </v-card-text>
     </v-card>
 
-    <!-- Consumer Records -->
-    <v-card>
-      <v-card-title class="d-flex justify-space-between py-4">
-        <span class="text-h6">Consumer List</span>
-        <div>
-          <!-- <v-btn text class="mr-2" @click="exportData">
-            <v-icon left>mdi-download</v-icon>
-            Export
-          </v-btn> -->
-          <v-btn color="primary" @click="openAddDialog">
-            <v-icon left>mdi-plus</v-icon>
-            Add Consumer
-          </v-btn>
-        </div>
-      </v-card-title>
+    <!-- Tabs -->
+    <v-tabs v-model="activeTab" class="mb-6">
+      <v-tab>Consumers</v-tab>
+      <v-tab v-if="userRole === 'admin'">Archived Consumers</v-tab>
+    </v-tabs>
 
-      <v-data-table
-        :headers="headers"
-        :items="filteredConsumers"
-        :loading="loading"
-        :items-per-page="10"
-        :footer-props="{
-          'items-per-page-options': [10, 20, 50],
-          'show-first-last-page': true,
-        }"
-      >
-        <template v-slot:item.status="{ item }">
-          <v-chip
-            :color="getStatusColor(item.status)"
-            small
-            label
-            text-color="white"
-          >
-            {{ item.status }}
-          </v-chip>
-        </template>
+    <v-tabs-items v-model="activeTab">
+      <v-tab-item>
+        <!-- Active Consumers Table -->
+        <v-card>
+          <v-card-title class="d-flex justify-space-between py-4">
+            <span class="text-h6"></span>
+            <v-btn color="primary" @click="openAddDialog">
+              <v-icon left>mdi-plus</v-icon>Add Consumer
+            </v-btn>
+          </v-card-title>
 
-        <template v-slot:item.actions="{ item }">
-          <!-- <v-btn
-            small
-            text
-            color="primary"
-            class="mr-2"
-            @click="viewConsumer(item)"
+          <v-data-table
+            :headers="headers"
+            :items="filteredConsumers"
+            :loading="loading"
+            :items-per-page="10"
+            :footer-props="{
+              'items-per-page-options': [10, 20, 50],
+              'show-first-last-page': true,
+            }"
           >
-            <v-icon small left>mdi-eye</v-icon>
-            View
-          </v-btn> -->
-          <v-btn
-            x-small
-            text
-            color="primary"
-            class="mr-2"
-            @click="editConsumer(item)"
-          >
-            <v-icon x-small left>mdi-pencil</v-icon>
-            Edit
-          </v-btn>
+            <!-- Table Templates -->
+            <template v-slot:item.status="{ item }">
+              <v-chip
+                :color="getStatusColor(item.status)"
+                small
+                label
+                text-color="white"
+              >
+                {{ item.status }}
+              </v-chip>
+            </template>
 
-          <v-btn
-            v-if="userRole === 'admin'"
-            x-small
-            text
-            :color="item.isArchived ? 'success' : 'error'"
-            @click="toggleArchive(item)"
+            <template v-slot:item.actions="{ item }">
+              <v-btn
+                x-small
+                text
+                color="primary"
+                class="mr-2"
+                @click="editConsumer(item)"
+              >
+                <v-icon x-small left>mdi-pencil</v-icon>Edit
+              </v-btn>
+              <v-btn
+                v-if="userRole === 'admin'"
+                x-small
+                text
+                color="error"
+                @click="confirmToggleArchive(item)"
+              >
+                <v-icon x-small left>mdi-archive</v-icon>Archive
+              </v-btn>
+            </template>
+          </v-data-table>
+        </v-card>
+      </v-tab-item>
+      <v-tab-item>
+        <!-- Archived Consumers Table -->
+        <v-card>
+          <v-card-title class="py-4">
+            <span class="text-h6">Archived Consumers</span>
+          </v-card-title>
+
+          <v-data-table
+            :headers="headers"
+            :items="filteredArchivedConsumers"
+            :loading="loading"
+            :items-per-page="10"
+            :footer-props="{
+              'items-per-page-options': [10, 20, 50],
+              'show-first-last-page': true,
+            }"
           >
-            <v-icon x-small left>
-              {{ item.isArchived ? "mdi-archive-restore" : "mdi-archive" }}
-            </v-icon>
-            {{ item.isArchived ? "Restore" : "Archive" }}
-          </v-btn>
-        </template>
-      </v-data-table>
-    </v-card>
+            <template v-slot:item.status="{ item }">
+              <v-chip
+                :color="getStatusColor(item.status)"
+                small
+                label
+                text-color="white"
+              >
+                {{ item.status }}
+              </v-chip>
+            </template>
+
+            <template v-slot:item.actions="{ item }">
+              <v-btn
+                v-if="userRole === 'admin'"
+                x-small
+                text
+                color="success"
+                @click="confirmToggleArchive(item)"
+              >
+                <v-icon x-small left>mdi-archive-restore</v-icon>Restore
+              </v-btn>
+            </template>
+          </v-data-table>
+        </v-card>
+      </v-tab-item>
+    </v-tabs-items>
 
     <!-- Add/Edit Consumer Dialog -->
     <v-dialog v-model="dialog" max-width="600px">
@@ -164,9 +184,9 @@
                   v-model="editedItem.accountNo"
                   label="Account No."
                   :disabled="isEdit"
-                  v-mask="letterMask"
+                  v-mask="numberMask"
                   required
-                   :rules="accountNoRules"
+                  :rules="contactNumberRules"
                 ></v-text-field>
               </v-col>
               <v-col cols="12" sm="6">
@@ -183,7 +203,7 @@
                   label="First Name"
                   required
                   :rules="accountNoRules"
-                    v-mask="letterMask"
+                  v-mask="letterMask"
                 ></v-text-field>
               </v-col>
               <v-col cols="12" sm="6">
@@ -199,7 +219,7 @@
                   label="Last Name"
                   required
                   :rules="accountNoRules"
-                    v-mask="letterMask"
+                  v-mask="letterMask"
                 ></v-text-field>
               </v-col>
               <v-col cols="12" sm="6">
@@ -227,7 +247,7 @@
                   v-model="editedItem.contactNumber"
                   label="Contact Number"
                   :rules="contactNumberRules"
-                    v-mask="numberMask"
+                  v-mask="numberMask"
                 ></v-text-field>
               </v-col>
               <v-col cols="12">
@@ -262,6 +282,20 @@
         <v-btn text v-bind="attrs" @click="snackbar = false"> Close </v-btn>
       </template>
     </v-snackbar>
+
+    <v-dialog v-model="confirmDialog" max-width="400">
+      <v-card>
+        <v-card-title class="text-h5">Confirm Action</v-card-title>
+        <v-card-text>
+          Are you sure you want to {{ confirmAction }} this consumer?
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text @click="confirmDialog = false">Cancel</v-btn>
+          <v-btn color="primary" @click="executeToggleArchive">Confirm</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -341,10 +375,13 @@ export default {
       status: "active",
       consumerType: "Existing Consumer",
     },
+    confirmDialog: false,
+      confirmAction: null,
+      confirmItem: null,
 
-    letterMask: Array(30).fill(/[A-Za-z]/), 
-    numberMask: Array(11).fill(/[0-9]/),   
-
+    letterMask: Array(30).fill(/[A-Za-z]/),
+    numberMask: Array(11).fill(/[0-9]/),
+    activeTab: 0,
     accountNoRules: [
       (v) => !!v || "Account number is required",
       (v) =>
@@ -355,8 +392,9 @@ export default {
       (v) => (v || "").length >= 2 || "Name must be at least 2 characters",
     ],
     contactNumberRules: [
-    v => !v || /^\d+$/.test(v) || 'Contact number must contain numbers only'
-  ],
+      (v) =>
+        !v || /^\d+$/.test(v) || "Contact number must contain numbers only",
+    ],
     emailRules: [(v) => !v || /.+@.+\..+/.test(v) || "Invalid email format"],
     isSaving: false,
     consumerTypes: ["New Consumer", "Existing Consumer"],
@@ -384,25 +422,27 @@ export default {
         const searchMatch =
           !this.search ||
           consumer.accountNo.toLowerCase().includes(searchLower) ||
-          consumer.firstName.toLowerCase().includes(searchLower) ||
-          consumer.middleName?.toLowerCase().includes(searchLower) ||
-          consumer.lastName.toLowerCase().includes(searchLower) ||
-          consumer.nameExtension?.toLowerCase().includes(searchLower) ||
           consumer.fullName.toLowerCase().includes(searchLower);
-
         const statusMatch =
           this.statusFilter === "All" || consumer.status === this.statusFilter;
-
         const purokMatch =
           this.purokFilter === "All" || consumer.purok === this.purokFilter;
+        return searchMatch && statusMatch && purokMatch && !consumer.isArchived;
+      });
+    },
 
-        const archiveMatch =
-          this.archiveFilter === "All" ||
-          (this.archiveFilter === "Archived"
-            ? consumer.isArchived
-            : !consumer.isArchived);
-
-        return searchMatch && statusMatch && purokMatch && archiveMatch;
+    filteredArchivedConsumers() {
+      return this.consumers.filter((consumer) => {
+        const searchLower = this.search.toLowerCase();
+        const searchMatch =
+          !this.search ||
+          consumer.accountNo.toLowerCase().includes(searchLower) ||
+          consumer.fullName.toLowerCase().includes(searchLower);
+        const statusMatch =
+          this.statusFilter === "All" || consumer.status === this.statusFilter;
+        const purokMatch =
+          this.purokFilter === "All" || consumer.purok === this.purokFilter;
+        return searchMatch && statusMatch && purokMatch && consumer.isArchived;
       });
     },
   },
@@ -504,6 +544,29 @@ export default {
         } finally {
           this.isSaving = false;
         }
+      }
+    },
+
+    confirmToggleArchive(item) {
+      this.confirmItem = item;
+      this.confirmAction = item.isArchived ? "restore" : "archive";
+      this.confirmDialog = true;
+    },
+
+    async executeToggleArchive() {
+      try {
+        await this.archiveConsumer({ id: this.confirmItem._id });
+        this.snackbarText = this.confirmItem.isArchived
+          ? "Consumer restored"
+          : "Consumer archived";
+        this.snackbarColor = "success";
+        await this.fetchConsumers();
+      } catch (error) {
+        this.snackbarText = error.message || "Error updating archive status";
+        this.snackbarColor = "error";
+      } finally {
+        this.snackbar = true;
+        this.confirmDialog = false;
       }
     },
 

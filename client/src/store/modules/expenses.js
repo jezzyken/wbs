@@ -83,9 +83,14 @@ export default {
     },
 
     async deleteExpense({ commit, dispatch }, id) {
+      if (!id) {
+        console.error("No ID provided");
+        return;
+      }
+      console.log("Deleting ID:", id);
       commit("SET_LOADING", true);
       try {
-        await api.delete(`/api/expenses/${id}`);
+        await api.patch(`/expenses/${id}`);
         await dispatch("fetchExpenses");
       } catch (error) {
         commit("SET_ERROR", error.message);
@@ -93,7 +98,7 @@ export default {
       } finally {
         commit("SET_LOADING", false);
       }
-    },
+    }
   },
 
   getters: {

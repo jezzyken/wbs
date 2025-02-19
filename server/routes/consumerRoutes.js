@@ -50,15 +50,27 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.patch("/:id", async (req, res) => {
   try {
-    const consumer = await Consumer.findOne({ _id: req.params.id });
-    if (!consumer) {
+    const before = await Consumer.findById(req.params.id);
+    const result = await Consumer.findByIdAndUpdate(
+      req.params.id,
+      {
+        isArchived: !before.isArchived,
+        archivedAt: !before.isArchived ? new Date() : null,
+      },
+      { new: true }
+    );
+
+    if (!result) {
       return res.status(404).json({ message: "Consumer not found" });
     }
 
-    await consumer.archive("67aa10cc67f0bfdc2b8de9ea", req.body.reason);
-    res.json({ message: "Consumer archived successfully" });
+    res.json({
+      message: `Consumer ${
+        result.isArchived ? "archived" : "unarchived"
+      } successfully`,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

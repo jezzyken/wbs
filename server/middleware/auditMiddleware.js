@@ -88,21 +88,21 @@ const auditMiddleware = (schema) => {
     });
   };
 
-  schema.pre("find", function () {
-    if (!this.getQuery().includeArchived) {
-      this.where({ isArchived: false });
-    }
-  });
+  // schema.pre("find", function () {
+  //   if (!this.getQuery().includeArchived) {
+  //     this.where({ isArchived: false });
+  //   }
+  // });
 
-  schema.pre("findOne", function () {
-    if (!this.getQuery().includeArchived) {
-      this.where({ isArchived: false });
-    }
-  });
+  // schema.pre("findOne", function () {
+  //   if (!this.getQuery().includeArchived) {
+  //     this.where({ isArchived: false });
+  //   }
+  // });
 
-  schema.statics.findWithArchived = function () {
-    return this.find().where({ includeArchived: true });
-  };
+  // schema.statics.findWithArchived = function () {
+  //   return this.find().where({ includeArchived: true });
+  // };
 };
 
 module.exports = auditMiddleware;

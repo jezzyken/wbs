@@ -36,8 +36,12 @@ const consumerSchema = new Schema({
     enum: ['active', 'inactive', 'delinquent', 'disconnected'],
     default: 'active'
   },
-  ...archiveFields
-}, baseOptions);
+  isArchived: {
+    type: Boolean,
+    default: false
+  },
+  // ...archiveFields
+}, );
 
 consumerSchema.virtual('fullName').get(function() {
   let name = `${this.firstName}`;
@@ -58,7 +62,7 @@ consumerSchema.virtual('fullName').get(function() {
 consumerSchema.index({ status: 1 });
 consumerSchema.index({ isArchived: 1 });
 
-auditMiddleware(consumerSchema);
+// auditMiddleware(consumerSchema);
 
 const Consumer = mongoose.model('Consumer', consumerSchema);
 module.exports = Consumer;

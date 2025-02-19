@@ -98,7 +98,7 @@
 
     <!-- Summary Cards -->
     <v-row class="mb-6">
-      <v-col cols="12" md="3">
+      <v-col cols="12" md="4">
         <v-card height="150">
           <!-- Add fixed height -->
           <v-card-text>
@@ -110,15 +110,15 @@
           </v-card-text>
         </v-card>
       </v-col>
-      <v-col cols="12" md="3">
+      <!-- <v-col cols="12" md="4">
         <v-card height="150">
           <v-card-text>
             <div class="text-h6 mb-2">Total Received</div>
             <div class="text-h4">₱{{ formatNumber(totalReceived) }}</div>
           </v-card-text>
         </v-card>
-      </v-col>
-      <v-col cols="12" md="3">
+      </v-col> -->
+      <v-col cols="12" md="4">
         <v-card height="150">
           <v-card-text>
             <div class="text-h6 mb-2">Total Expenses</div>
@@ -129,7 +129,7 @@
           </v-card-text>
         </v-card>
       </v-col>
-      <v-col cols="12" md="3">
+      <v-col cols="12" md="4">
         <v-card height="150">
           <v-card-text>
             <div class="text-h6 mb-2">Net Income</div>

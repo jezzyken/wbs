@@ -14,6 +14,15 @@ const expenseSchema = new Schema({
   description: {
     type: String,
   },
+  isArchived: {
+    type: Boolean,
+    default: false,
+  },
+  archivedBy: {
+    type: String,
+    ref: "User",
+    default: "67ac4a5736ca228e4e71f829",
+  },
 });
 
 module.exports = mongoose.model("Expense", expenseSchema);

@@ -168,6 +168,7 @@ router.get("/expenses/daily", async (req, res) => {
 
     const expenses = await Expense.find({
       date: { $gte: startDate, $lte: endDate },
+      isArchived: { $ne: true }
     }).sort({ date: -1 });
 
     const summary = {
@@ -195,6 +196,7 @@ router.get("/expenses/monthly", async (req, res) => {
 
     const expenses = await Expense.find({
       date: { $gte: startDate, $lte: endDate },
+      isArchived: { $ne: true }
     }).sort({ date: -1 });
 
     const dailySummary = expenses.reduce((acc, expense) => {
